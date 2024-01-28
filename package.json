@@ -5,11 +5,19 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start:dev": "nodemon ./src/index.mjs",
+    "start": "node ./src/index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "expresss": "^0.0.0"
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "expresss": "^0.0.0",
+    "mongoose": "^8.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.3"
   }
 }
