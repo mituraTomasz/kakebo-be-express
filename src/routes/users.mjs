@@ -5,39 +5,15 @@ import { hashPassword, comparePassword } from "../utils/helpers.mjs";
 
 export const userRouter = Router();
 
-// LOGIN
-// userRouter.post("/auth/user/login", async (req, res) => {
-//   const { username, password } = req.body;
-
-//   try {
-//     const user = await User.findOne({
-//       username,
-//     });
-
-//     console.log("user", user);
-
-//     if (user === null) {
-//       return res.status(401).send({ msg: "There is no user with that username!" });
-//     }
-
-//     if (comparePassword(password, user.password)) {
-//       req.session.user = user;
-
-//       return res.status(200).send({ msg: "Welcome " + user.username });
-//     } else {
-//       return res.status(401).send({ msg: "Bad password!" });
-//     }
-//   } catch (err) {
-//     return res.status(500).send({ msg: err.message });
-//   }
-// });
-
-// Login - passport
+// **Login - passport**
 userRouter.post("/auth/user/login", passport.authenticate("local"), (req, res) => {
-  res.sendStatus(200);
+  return res.status(200).send({
+    username: req.user.username,
+    email: req.user.email,
+  });
 });
 
-// REGISTER
+// **REGISTER**
 userRouter.post("/auth/user/register", async (req, res) => {
   try {
     const { username, password, email } = req.body;
@@ -64,7 +40,7 @@ userRouter.post("/auth/user/register", async (req, res) => {
   }
 });
 
-// LOGOUT
+// **LOGOUT**
 userRouter.post("/auth/user/logout", (req, res) => {
   if (req.isAuthenticated()) {
     console.log("User is logged in");
@@ -81,12 +57,15 @@ userRouter.post("/auth/user/logout", (req, res) => {
   }
 });
 
+// **PROFILE**
 userRouter.get("/api/user/profile", (req, res) => {
-  if (req.session.user) {
-    // console.log("req.session.user", req.session.user);
+  if (req.isAuthenticated()) {
+    // Użytkownik jest zalogowany, możesz uzyskać dostęp do danych z req.user
+    res.json({ user: req.user });
+  } else {
+    // Użytkownik nie jest zalogowany
+    res.sendStatus(401);
   }
-
-  return res.status(200).send({ msg: "OK" });
 });
 
 /* NOTE */

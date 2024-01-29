@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import passport from "passport";
 import { router } from "./routes/index.mjs";
+import MongoStore from "connect-mongo";
 import "./stratgies/local.strategy.mjs";
 
 const app = express();
@@ -20,6 +21,12 @@ app.use(
     secret: "my-secret-key",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      maxAge: 60000 * 60,
+    },
+    store: MongoStore.create({
+      client: mongoose.connection.getClient(),
+    }),
   })
 );
 
