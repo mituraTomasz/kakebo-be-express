@@ -1,34 +1,43 @@
 import { Router } from "express";
 import { User } from "./../schemas/user.schema.mjs";
-export const userRouter = Router();
+import passport from "passport";
 import { hashPassword, comparePassword } from "../utils/helpers.mjs";
 
-userRouter.post("/auth/user/login", async (req, res) => {
-  const { username, password } = req.body;
+export const userRouter = Router();
 
-  try {
-    const user = await User.findOne({
-      username,
-    });
+// LOGIN
+// userRouter.post("/auth/user/login", async (req, res) => {
+//   const { username, password } = req.body;
 
-    console.log("user", user);
+//   try {
+//     const user = await User.findOne({
+//       username,
+//     });
 
-    if (user === null) {
-      return res.status(401).send({ msg: "There is no user with that username!" });
-    }
+//     console.log("user", user);
 
-    if (comparePassword(password, user.password)) {
-      req.session.user = user;
+//     if (user === null) {
+//       return res.status(401).send({ msg: "There is no user with that username!" });
+//     }
 
-      return res.status(200).send({ msg: "Welcome " + user.username });
-    } else {
-      return res.status(401).send({ msg: "Bad password!" });
-    }
-  } catch (err) {
-    return res.status(500).send({ msg: err.message });
-  }
+//     if (comparePassword(password, user.password)) {
+//       req.session.user = user;
+
+//       return res.status(200).send({ msg: "Welcome " + user.username });
+//     } else {
+//       return res.status(401).send({ msg: "Bad password!" });
+//     }
+//   } catch (err) {
+//     return res.status(500).send({ msg: err.message });
+//   }
+// });
+
+// Login - passport
+userRouter.post("/auth/user/login", passport.authenticate("local"), (req, res) => {
+  res.sendStatus(200);
 });
 
+// REGISTER
 userRouter.post("/auth/user/register", async (req, res) => {
   try {
     const { username, password, email } = req.body;
@@ -55,9 +64,26 @@ userRouter.post("/auth/user/register", async (req, res) => {
   }
 });
 
+// LOGOUT
+userRouter.post("/auth/user/logout", (req, res) => {
+  if (req.isAuthenticated()) {
+    console.log("User is logged in");
+    req.logout((err) => {
+      if (err) {
+        return res.status(500).send({ msg: err.message });
+      }
+
+      res.sendStatus(200);
+    });
+  } else {
+    console.log("User is not logged in");
+    res.status(401).send({ msg: "User is not logged in" });
+  }
+});
+
 userRouter.get("/api/user/profile", (req, res) => {
   if (req.session.user) {
-    console.log("req.session.user", req.session.user);
+    // console.log("req.session.user", req.session.user);
   }
 
   return res.status(200).send({ msg: "OK" });
