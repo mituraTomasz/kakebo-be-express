@@ -1,7 +1,8 @@
 import express from "express";
-import { router } from "./routes/index.mjs";
+import session from "express-session";
 import mongoose from "mongoose";
 import cors from "cors";
+import { router } from "./routes/index.mjs";
 
 mongoose
   .connect("mongodb+srv://mitur5g:onlyProgrammers@cluster0.fkejnpl.mongodb.net/Kakebo")
@@ -9,6 +10,14 @@ mongoose
   .catch((err) => console.log(err));
 
 const app = express();
+
+app.use(
+  session({
+    secret: "my-secret-key",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
 
 app.use(cors());
 app.use(express.json());

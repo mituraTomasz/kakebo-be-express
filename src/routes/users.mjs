@@ -1,31 +1,7 @@
 import { Router } from "express";
 import { User } from "./../schemas/user.schema.mjs";
 export const userRouter = Router();
-
-userRouter.post("/auth/user/register", async (req, res) => {
-  try {
-    const { username, password, email } = req.body;
-    const existingUser = await User.findOne({ email });
-
-    console.log("existingUser", existingUser);
-
-    if (existingUser) {
-      return res.status(401).send({ msg: "Email aleady used!" });
-    } else {
-      const newUser = new User({
-        username,
-        password,
-        email,
-      });
-
-      const savedUser = await newUser.save();
-      console.log("savedUser", savedUser);
-      return res.status(200).send(savedUser);
-    }
-  } catch (error) {
-    return res.status(500).send({ msg: err.message });
-  }
-});
+import { hashPassword, comparePassword } from "../utils/helpers.mjs";
 
 userRouter.post("/auth/user/login", async (req, res) => {
   const { username, password } = req.body;
@@ -33,17 +9,58 @@ userRouter.post("/auth/user/login", async (req, res) => {
   try {
     const user = await User.findOne({
       username,
-      password,
     });
 
+    console.log("user", user);
+
     if (user === null) {
-      res.status(401).send({ msg: "Bad credentials!" });
-    } else {
-      res.status(200).send({ msg: "Welcome " + user.username });
+      return res.status(401).send({ msg: "There is no user with that username!" });
     }
-  } catch (error) {
+
+    if (comparePassword(password, user.password)) {
+      req.session.user = user;
+
+      return res.status(200).send({ msg: "Welcome " + user.username });
+    } else {
+      return res.status(401).send({ msg: "Bad password!" });
+    }
+  } catch (err) {
     return res.status(500).send({ msg: err.message });
   }
+});
+
+userRouter.post("/auth/user/register", async (req, res) => {
+  try {
+    const { username, password, email } = req.body;
+    const existingUser = await User.findOne({ username });
+
+    if (existingUser) {
+      return res.status(401).send({ msg: "username aleady used!" });
+    } else {
+      const hashedPassword = hashPassword(password);
+      console.log("hashed", hashedPassword);
+
+      const newUser = new User({
+        username,
+        password: hashedPassword,
+        email,
+      });
+
+      const savedUser = await newUser.save();
+
+      return res.status(200).send(savedUser);
+    }
+  } catch (err) {
+    return res.status(500).send({ msg: err.message });
+  }
+});
+
+userRouter.get("/api/user/profile", (req, res) => {
+  if (req.session.user) {
+    console.log("req.session.user", req.session.user);
+  }
+
+  return res.status(200).send({ msg: "OK" });
 });
 
 /* NOTE */
