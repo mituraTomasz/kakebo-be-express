@@ -10,6 +10,7 @@ userRouter.post("/auth/user/login", passport.authenticate("local"), (req, res) =
   return res.status(200).send({
     username: req.user.username,
     email: req.user.email,
+    id: req.user._id.toString(),
   });
 });
 
