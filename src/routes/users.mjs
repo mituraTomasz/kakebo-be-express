@@ -1,13 +1,33 @@
 import { Router } from "express";
 import { User } from "./../schemas/user.schema.mjs";
+import { hashPassword } from "../utils/helpers.mjs";
+import { verifyToken } from "./../middlewares/verifyToken.mjs";
+import jwt from "jsonwebtoken";
 import passport from "passport";
-import { hashPassword, comparePassword } from "../utils/helpers.mjs";
 
 export const userRouter = Router();
 
+// **Verify token**
+userRouter.get("/auth/user/verify", verifyToken, async (req, res) => {
+  const user = req.user;
+
+  res.status(200).send({ user });
+});
+
 // **Login - passport**
 userRouter.post("/auth/user/login", passport.authenticate("local"), (req, res) => {
+  const token = jwt.sign(
+    {
+      username: req.user.username,
+      email: req.user.email,
+      id: req.user._id.toString(),
+    },
+    "secret-key",
+    { expiresIn: "1h" }
+  );
+
   return res.status(200).send({
+    token,
     username: req.user.username,
     email: req.user.email,
     id: req.user._id.toString(),

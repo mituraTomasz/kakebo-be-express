@@ -10,10 +10,6 @@ dailyExpensesRouter.post("/api/daily-expenses/get", async (req, res) => {
     const query = { ownerId };
     const dailyExpenses = await DailyExpense.find(query);
 
-    console.log("GET DAILY EXPENSES");
-    console.log("req.body", req.body);
-    console.log("dailyExpenses", dailyExpenses);
-
     const updatedDailyexpenses = dailyExpenses.map((dailyExpense) => ({
       id: dailyExpense._id,
       title: dailyExpense.title,
