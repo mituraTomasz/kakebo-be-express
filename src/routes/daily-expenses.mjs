@@ -26,20 +26,73 @@ dailyExpensesRouter.post("/api/daily-expenses/get", async (req, res) => {
 });
 
 // ***ADD NEW DAILY EXPENSE***
-dailyExpensesRouter.post("/api/daily-expenses/add", (req, res) => {
+dailyExpensesRouter.post("/api/daily-expenses/add", async (req, res) => {
   try {
-    const { title, amount, date, ownerId } = req.body;
-    const newDailyExpense = new DailyExpense({
+    const { title, amount, date, ownerId } = req.body.dailyExpense;
+    const dailyExpense = {
       title,
       amount,
       date,
       ownerId,
-    });
+    };
+    const newDailyExpense = new DailyExpense(dailyExpense);
     const savedUser = newDailyExpense.save();
+    const formatedDailyExpense = {
+      ...dailyExpense,
+      id: newDailyExpense._id.toString(),
+    };
 
-    return res.status(200).send(savedUser);
+    return res.status(200).send(formatedDailyExpense);
   } catch (err) {
     console.log(err);
     return res.status(500).send({ error: "Internal Server Error" });
   }
+});
+
+// ***REMOVE DAILY EXPENSE***
+dailyExpensesRouter.delete("/api/daily-expenses/delete/:id", (req, res) => {
+  const { id } = req.params;
+
+  DailyExpense.findOneAndDelete({ _id: id })
+    .then((result) => {
+      if (result) {
+        console.log("Element został pomyślnie usunięty.");
+
+        return res.status(200).send({ msg: "ok boomer" });
+      } else {
+        console.log("Operacja nie została potwierdzona.");
+      }
+    })
+    .catch((err) => {
+      console.error("Błąd podczas usuwania elementu:", err);
+    });
+});
+
+// ***UPDATE DAILY EXPENSE***
+dailyExpensesRouter.put("/api/daily-expenses/put", (req, res) => {
+  const { id, ownerId, date, amount, title } = req.body;
+  const updatedDate = new Date(date);
+
+  console.log("id", id);
+
+  DailyExpense.updateOne(
+    {
+      _id: id,
+    },
+    {
+      $set: {
+        title,
+        amount,
+        updatedDate,
+        ownerId,
+      },
+    }
+  )
+    .then(() => {
+      console.log("Element został pomyślnie zaktualizowany.");
+      res.send({ msg: "ok boomer" });
+    })
+    .catch((err) => {
+      console.error("Błąd podczas aktualizacji elementu:", err);
+    });
 });
