@@ -63,19 +63,21 @@ userRouter.post("/auth/user/register", async (req, res) => {
 
 // **LOGOUT**
 userRouter.post("/auth/user/logout", (req, res) => {
-  if (req.isAuthenticated()) {
-    console.log("User is logged in");
-    req.logout((err) => {
-      if (err) {
-        return res.status(500).send({ msg: err.message });
-      }
+  console.log("logging out...");
 
-      res.sendStatus(200);
-    });
-  } else {
-    console.log("User is not logged in");
-    res.status(401).send({ msg: "User is not logged in" });
+  const token = req.headers.authorization?.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ message: "Brak tokenu uwierzytelniającego." });
   }
+
+  jwt.verify(token, "secret-key", (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: "Błąd weryfikacji tokenu." });
+    }
+
+    res.status(200).json({ message: "Wylogowano pomyślnie." });
+  });
 });
 
 // **PROFILE**
